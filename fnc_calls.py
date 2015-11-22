@@ -1,5 +1,5 @@
 import numpy as np
-from RTE_fnc_copy import *
+from RTE_fnc import *
 
 #  Variable declarations
 

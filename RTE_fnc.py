@@ -561,7 +561,7 @@ def sweep_down(nlayers, ng, xg, wg, gdif, deltaL, jj, r_s, ic):
     for i in range(ng/2):
         sum2 = 0.0
         for j in range(ng):
-            sum2 += wg[j] * ic[nlayers+1, j, i] # Just added+1
+            sum2 += wg[j] * ic[nlayers+1, j, i]
         sum1 += wg[i] * np.abs(xg[i]) * sum2 * conv
 
     fc_soil = sum1
@@ -569,7 +569,7 @@ def sweep_down(nlayers, ng, xg, wg, gdif, deltaL, jj, r_s, ic):
     #  Evaluate Ic upward at the ground
     for i in range(ng/2, ng):
         for j in range(ng):
-            ic[nlayers+1, j, i] = (fc_soil * r_s) / np.pi  # Eric has nlayers+1
+            ic[nlayers+1, j, i] = (fc_soil * r_s) / np.pi  # Same as Eric
 
     return ic
 
@@ -615,7 +615,7 @@ def sweep_up(nlayers, ng, xg, gdif, deltaL, jj, ic, eps):
             # WHY indexed on 1?
             if tv > eps:
                 converg = False
-                print 'Iter {0}: tv = {1}'.format(ct, tv)
+                #print 'Iter {0}: tv = {1}'.format(ct, tv)
                 break
             else:
                 converg = True
@@ -692,6 +692,7 @@ def energy_bal(nlayers, ng, xg, wg, deltaL, r_s, rhold, tauld, gdir, gdif, fo_uc
         sum2 = 0.0
         for j in range(ng):
             sum2 += wg[j] * ic[nlayers, j, i]
+            #print sum2
             #CHECK THIS NLAYERS AND THOSE ON THE OTHER IC'S
 
         sum1 += wg[i] * abs(xg[i]) * sum2 * conv
@@ -810,4 +811,4 @@ def energy_bal(nlayers, ng, xg, wg, deltaL, r_s, rhold, tauld, gdir, gdif, fo_uc
                    (vn[9], usa), (vn[10], csa), (vn[11], sa), (vn[12], ebal)]
 
     for v in var_collect:
-        print(v)
+        print v
