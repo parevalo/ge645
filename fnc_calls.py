@@ -32,8 +32,8 @@ Fd_ucdsoil, Id_ucu = id_uncol_up(dl, nl, gdif_out, Id, ng, xg, wg, R_s)
 Q = fcs(nl, ng, wg, gmdir_out, gmdif_out, Io_ucd, Io_ucu, Id_ucd, Id_ucu)
 
 #  Iterate over multiple collision source
-S = np.zeros((nl+1, ng, ng))  # Eric has nl+1
-ic = np.zeros((nl+2, ng, ng)) # Must be +2
+S = np.zeros((nl, ng, ng))
+ic = np.zeros((nl+1, ng, ng))
 for ims in range(100):
     print ims
     for i in range(ng):

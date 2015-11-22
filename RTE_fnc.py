@@ -371,7 +371,7 @@ def io_uncol_down(deltaL, nlayers, gdir, io, mp):
     L1 = 0.0
     io_ucd = np.zeros(nlayers)
     for k in range(nlayers):
-        L2 = (k) * deltaL - (0.5 * deltaL) # eric has i+1
+        L2 = k * deltaL - (0.5 * deltaL)
         prob = np.exp(-(1 / abs(mp)) * gdir * (L2 - L1))
         io_ucd[k] = io * prob
 
@@ -408,8 +408,8 @@ def io_uncol_up(deltaL, nlayers, gdir, gdif, io, mp, ng, xg, r_s):
     for i in range(ng/2, ng):
         for j in range(ng):
             L2 = nlayers * deltaL
-            for k in range(nlayers-1, -1, -1):
-                L1 = (k) * deltaL - (0.5 * deltaL)  # Eric has k+1
+            for k in range(nlayers-1, -1, -1): # Because this goes from 99 to 0
+                L1 = k * deltaL - (0.5 * deltaL)
                 prob = np.exp(-(1 / np.abs(xg[i])) * gdif[j, i] * (L2 - L1))
                 io_ucu[k, j, i] = io_ucusoil * prob
 
@@ -434,7 +434,7 @@ def id_uncol_down(deltaL, nlayers, gdif, i_d, ng, xg):
         for j in range(ng):
             L1 = 0.0
             for k in range(nlayers):
-                L2 = (k) * deltaL - (0.5 * deltaL)  # Eric has k+1
+                L2 = k * deltaL - (0.5 * deltaL)
                 prob = np.exp(-(1 / np.abs(xg[i])) * gdif[j, i] * (L2 - L1))
                 id_ucd[k, j, i] = i_d * prob
 
@@ -480,8 +480,8 @@ def id_uncol_up(deltaL, nlayers, gdif, i_d, ng, xg, wg, r_s):
     for i in range(ng/2, ng):
         for j in range(ng):
             L2 = nlayers * deltaL
-            for k in range(nlayers-1, -1, -1):
-                L1 = (k) * deltaL - (0.5 * deltaL)  # Eric has k+1
+            for k in range(nlayers-1, -1, -1): # Again, bc this goes from 99 to 0
+                L1 = k * deltaL - (0.5 * deltaL)
                 prob = np.exp(-(1 / np.abs(xg[i])) * gdif[j, i] * (L2 - L1))
                 id_ucu[k, j, i] = id_ucusoil * prob
 
@@ -561,7 +561,7 @@ def sweep_down(nlayers, ng, xg, wg, gdif, deltaL, jj, r_s, ic):
     for i in range(ng/2):
         sum2 = 0.0
         for j in range(ng):
-            sum2 += wg[j] * ic[nlayers+1, j, i]
+            sum2 += wg[j] * ic[nlayers, j, i] #Instead of nl+1 bc max index is 100
         sum1 += wg[i] * np.abs(xg[i]) * sum2 * conv
 
     fc_soil = sum1
@@ -569,7 +569,7 @@ def sweep_down(nlayers, ng, xg, wg, gdif, deltaL, jj, r_s, ic):
     #  Evaluate Ic upward at the ground
     for i in range(ng/2, ng):
         for j in range(ng):
-            ic[nlayers+1, j, i] = (fc_soil * r_s) / np.pi  # Same as Eric
+            ic[nlayers, j, i] = (fc_soil * r_s) / np.pi #Instead of nl+1 bc max index is 100
 
     return ic
 
@@ -601,21 +601,17 @@ def sweep_up(nlayers, ng, xg, gdif, deltaL, jj, ic, eps):
             fij = ((xg[i] / deltaL) + (0.5 * gdif[j, i]))
             cij = ((xg[i] / deltaL) - (0.5 * gdif[j, i])) / fij
             dij = 1.0 / fij
-            for k in range(nlayers, -1, -1): #switch back to nlay-1
+            for k in range(nlayers-1, -1, -1): #this goes from 99 to 0
                 ic[k, j, i] = cij * ic[k+1, j, i] + dij * jj[k, j, i]
-                #  Eric has k instead of k+1 in the right side
 
     #  Check for convergence
     converg = True
     ct = 0
     for i in range(ng/2, ng):
         for j in range(ng):
-            # ct += 1
-            tv = abs(ic[0, j, i] - ic_old[j, i]) #changed back to 0
-            # WHY indexed on 1?
+            tv = abs(ic[0, j, i] - ic_old[j, i])
             if tv > eps:
                 converg = False
-                #print 'Iter {0}: tv = {1}'.format(ct, tv)
                 break
             else:
                 converg = True
@@ -638,7 +634,7 @@ def multicoll_s(nlayers, ng, wg, gmdif, ic):
     #  Evaluate multiple collision source due to Ic
     conv1 = convfactors(1.0, -1.0)[0]
     conv2 = convfactors(2.0 * np.pi, 0.0)[0]
-    s = np.zeros((nlayers+1, ng, ng))  # Eric has nlayers+1
+    s = np.zeros((nlayers, ng, ng))
 
     for i in range(ng):
         for j in range(ng):
@@ -692,8 +688,6 @@ def energy_bal(nlayers, ng, xg, wg, deltaL, r_s, rhold, tauld, gdir, gdif, fo_uc
         sum2 = 0.0
         for j in range(ng):
             sum2 += wg[j] * ic[nlayers, j, i]
-            #print sum2
-            #CHECK THIS NLAYERS AND THOSE ON THE OTHER IC'S
 
         sum1 += wg[i] * abs(xg[i]) * sum2 * conv
     ht_c = sum1
