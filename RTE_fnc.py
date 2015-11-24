@@ -298,12 +298,12 @@ def gamma_d(ng, xg, wg, hL, gL, rho_ld, tau_ld, mp, pp, mu, phi):
 def check_gammadir(ng, wg, rho_ld, tau_ld, gammadir, gdir):
     """
     Check the Gamma dir function for normalization. Original code requires xg but doesn't use
-    :param ng:
-    :param wg:
-    :param rho_ld:
-    :param tau_ld:
-    :param gammadir:
-    :param gdir:
+    :param ng: Number of points in quadrature
+    :param wg: Weights
+    :param rho_ld: leaf hemispherical reflectance (diffuse internal scattering)
+    :param tau_ld: leaf hemispherical transmittance (diffuse internal scattering)
+    :param gammadir: area scattering phase function for direct solar radiation)
+    :param gdir: Geometry factor for direct solar radiation
     :return:
     """
     conv1_pp, conv2_pp = convfactors(2.0 * np.pi, 0.0)
@@ -326,14 +326,14 @@ def check_gammadir(ng, wg, rho_ld, tau_ld, gammadir, gdir):
 def xsections(ng, hL, dist, mp, pp, rho_ld, tau_ld):
     """
     Calculate all the crosssections and return arrays with their values
-    :param ng: fill!
-    :param hL: 
-    :param gL: 
-    :param dist: 
-    :param mp: 
-    :param pp: 
-    :param rho_ld: 
-    :param tau_ld: 
+    :param ng: Quadrature number
+    :param hL: PDF of leaf normal azimuths (assumed uniform)
+    :param gL: PDF of leaf normal inclination
+    :param dist: Number representing the desired distribution for gL
+    :param mp: Mu-prime
+    :param pp: Phi-prime
+    :param rho_ld: leaf hemispherical reflectance (diffuse internal scattering)
+    :param tau_ld: leaf hemispherical transmittance (diffuse internal scattering)
     :return: xg, wg, gdir_out, gdif_out, gmdir_out, gmdif_out
     """
     # Obtain Gauss quadrature
@@ -361,8 +361,8 @@ def io_uncol_down(deltaL, nlayers, gdir, io, mp):
     """
     This function evaluates the downward uncollided direct solar intensity layer by layer"
     :param deltaL: Thickness of spatial cells (LAI/nlayers)
-    :param nlayers: Number of layers in the canopy
-    :param gdir: Output of the Gdir function
+    :param nlayers: Number of layers in canopy Number of layers in the canopy
+    :param gdir: Geometry factor for direct solar radiation
     :param io: intensity of the direct beam
     :param mp: cosine of theta_o
     :return: io_ucd: Downward uncollided direct solar radiation
@@ -382,9 +382,9 @@ def io_uncol_up(deltaL, nlayers, gdir, gdif, io, mp, ng, xg, r_s):
     """
     Evaluates the upward uncollided direct solar radiation
     :param deltaL: Thickness of spatial cells (LAI/nlayers)
-    :param nlayers: Number of layers in the canopy
-    :param gdir: Output of the Gdir function
-    :param gdif: Array with output of the gdif function
+    :param nlayers: Number of layers in canopy Number of layers in the canopy
+    :param gdir: Geometry factor for direct solar radiation
+    :param gdif: Geometry factor for scattered radiation field
     :param io: intensity of the direct beam
     :param mp: cosine of theta_o
     :param ng: gauss quadrature order
@@ -420,8 +420,8 @@ def id_uncol_down(deltaL, nlayers, gdif, i_d, ng, xg):
     """
     Evaluates the downward uncollided diffuse sky radiation
     :param deltaL: Thickness of spatial cells (LAI/nlayers)
-    :param nlayers: Number of layers in the canopy
-    :param gdif: Array with output of the gdif function
+    :param nlayers: Number of layers in canopy Number of layers in the canopy
+    :param gdif: Geometry factor for scattered radiation field
     :param i_d: intensity of the diffuse beam
     :param ng: gauss quadrature order
     :param xg: gauss ordinates
@@ -444,9 +444,9 @@ def id_uncol_down(deltaL, nlayers, gdif, i_d, ng, xg):
 def id_uncol_up(deltaL, nlayers, gdif, i_d, ng, xg, wg, r_s):
     """
     Evaluates the upward uncollided diffuse sky radiation
-    :param deltaL: Thickness of spatial cells (LAI/nlayers)
-    :param nlayers: Number of layers in the canopy
-    :param gdif: Array with output of the gdif function
+    :param deltaL: Thickness o  f spatial cells (LAI/nlayers)
+    :param nlayers: Number of layers in canopy
+    :param gdif: Geometry factor for scattered radiation field
     :param i_d: intensity of the diffuse beam
     :param ng: gauss quadrature order
     :param xg: gauss ordinates
@@ -491,15 +491,15 @@ def id_uncol_up(deltaL, nlayers, gdif, i_d, ng, xg, wg, r_s):
 def fcs(nlayers, ng, wg, gmdir, gmdif, io_ucd, io_ucu, id_ucd, id_ucu):
     """
     Evaluates the first collision source Q
-    :param nlayers:
-    :param ng:
-    :param wg:
-    :param gmdir:
-    :param gmdif:
-    :param io_ucd:
-    :param io_ucu:
-    :param id_ucd:
-    :param id_ucu:
+    :param nlayers: Number of layers in canopy
+    :param ng: Quadrature order
+    :param wg: Quadrature weights
+    :param gmdir: Area scattering phase function for direct solar radiation
+    :param gmdif: Area scattering phase function for scattered radiation field
+    :param io_ucd: downward uncollided direct solar radiation
+    :param io_ucu: upward uncollided direct solar radiation
+    :param id_ucd: downward uncollided diffuse sky radiation
+    :param id_ucu: upward uncollided diffuse sky radiation
     :return: Q: First collision source
     """
 
@@ -535,14 +535,14 @@ def sweep_down(nlayers, ng, xg, wg, gdif, deltaL, jj, r_s, ic):
     """
     This function sweeps downward in the phase-space mesh, handles the bottom boundary condition and
     evaluates the upward Ic at the ground
-    :param nlayers:
-    :param ng:
-    :param xg:
-    :param wg:
-    :param gdif:
-    :param deltaL:
-    :param jj:
-    :param r_s:
+    :param nlayers: Number of layers in canopy
+    :param ng: Quadrature order
+    :param xg: Quadrature ordinates
+    :param wg: Quadrature weights
+    :param gdif: Geometry factor for scattered radiation field
+    :param deltaL: Thickness o  f spatial cells (LAI/nlayers)
+    :param jj: Corresponds to S, the multiple collision source
+    :param r_s: soil hemipsherical reflectance (assumed Lambertian)
     :return: Value of collided intensity Ic on the ground
     """
 
@@ -577,12 +577,12 @@ def sweep_down(nlayers, ng, xg, wg, gdif, deltaL, jj, r_s, ic):
 def sweep_up(nlayers, ng, xg, gdif, deltaL, jj, ic, eps):
     """
     This routine sweeps upward in the phase-space mesh and checks for convergence
-    :param nlayers:
-    :param ng:
-    :param xg:
-    :param gdif:
-    :param deltaL:
-    :param jj:
+    :param nlayers: Number of layers in canopy
+    :param ng: Quadrature order
+    :param xg: Quadrature ordinates
+    :param gdif: Geometry factor for scattered radiation field
+    :param deltaL: Thickness o  f spatial cells (LAI/nlayers)
+    :param jj: Corresponds to S, the multiple collision source
     :param ic: Collided intensity field
     :param eps: Epsilon, convergence criterion for iteration of the scattering integral
     :return:
@@ -623,11 +623,11 @@ def sweep_up(nlayers, ng, xg, gdif, deltaL, jj, ic, eps):
 def multicoll_s(nlayers, ng, wg, gmdif, ic):
     """
     Evaluates the multiple-collision source S
-    :param nlayers:
-    :param ng:
-    :param wg:
+    :param nlayers: Number of layers in canopy
+    :param ng: Quadrature order
+    :param wg: Quadrature ordinates
     :param gmdif:
-    :param ic:
+    :param ic: Collided intensity field
     :return: S: Multiple collision source
     """
 
@@ -657,23 +657,25 @@ def energy_bal(nlayers, ng, xg, wg, deltaL, r_s, rhold, tauld, gdir, gdif, fo_uc
                fd_ucdsoil, io_ucd, id_ucd, io_ucu, id_ucu, ic):
     """
     This function calculates the energy balance
-    :param nlayers:
-    :param ng:
-    :param xg:
-    :param wg:
-    :param deltaL:
-    :param r_s:
-    :param rhold:
-    :param tauld:
-    :param gdir:
-    :param gdif:
-    :param fo_ucdsoil:
-    :param fd_ucdsoil:
-    :param io_ucd:
-    :param id_ucd:
-    :param io_ucu:
-    :param id_ucu:
-    :param ic:
+    :param nlayers: Number of layers in canopy
+    :param ng: Quadrature order
+    :param xg: Quadrature ordinates
+    :param wg: Quadrature weights
+    :param deltaL: Thickness o  f spatial cells (LAI/nlayers)
+    :param r_s: soil hemipsherical reflectance (assumed Lambertian)
+    :param rhold: leaf hemispherical reflectance (diffuse internal  scattering)
+    :param tauld: leaf hemispherical transmittance (diffuse internal scattering)
+    :param gdir: Geometry factor for direct solar radiation
+    :param gdif: Geometry factor for scattered radiation field
+    :param fo_ucdsoil: donward uncollided flux density of direct solar
+                       radiation incident on the ground below the canopy
+    :param fd_ucdsoil:donward uncollided flux density of diffuse sky
+                      radiation incident on the ground below the canopy
+    :param io_ucd: downward uncollided direct solar radiation
+    :param id_ucd: downward uncollided diffuse sky radiation
+    :param io_ucu: upward uncollided direct solar radiation
+    :param id_ucu: upward uncollided diffuse sky radiation
+    :param ic: Collided intensity field
     :return: Values of reflectance, transmittance and absorptance
     """
 
@@ -776,7 +778,7 @@ def energy_bal(nlayers, ng, xg, wg, deltaL, r_s, rhold, tauld, gdir, gdif, fo_uc
     ab_uc = abo_ucd + abo_ucu + abd_ucd + abd_ucu
 
     # Calculating the totals
-    hr = hr_uc + hr_c
+    hr = hr_uc + hr_c #  DHR if fdir=1, else BHR)
     ht = ht_uc + ht_c
     ab = ab_uc + ab_c
     usa = (1 - r_s) * ht_uc

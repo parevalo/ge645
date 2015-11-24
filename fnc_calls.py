@@ -4,7 +4,7 @@ from RTE_fnc import *
 #  Variable declarations
 
 ng = 8
-thetaprime = np.radians(120.0)
+thetaprime = np.radians(150.0)
 phiprime = np.radians(0.0)
 muprime = np.cos(thetaprime)
 distnames = ('Planophile', 'Erectophile', 'Plagiphile', 'Extremophile', 'Uniform', 'Spherical')
@@ -36,6 +36,7 @@ S = np.zeros((nl, ng, ng))
 ic = np.zeros((nl+1, ng, ng))
 for ims in range(100):
     print ims
+    #S[:, :, :] += Q[:, :, :] # Vectorized version works fine too
     for i in range(ng):
         for j in range(ng):
             for k in range(nl):
@@ -51,7 +52,7 @@ for ims in range(100):
 
 #  Print theta_v, phi_v and RF values
 
-RF = np.zeros((ng, ng/2))
+RF = np.zeros((ng, ng/2)) # Reflectance factor, BRF if fdir=1, else HDRF)
 for i in range(ng/2, ng):
     theta_v = np.degrees(xg[i])
     for j in range(ng):
