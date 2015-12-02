@@ -334,7 +334,7 @@ def xsections(ng, hL, dist, mp, pp, rho_ld, tau_ld):
     :param pp: Phi-prime
     :param rho_ld: leaf hemispherical reflectance (diffuse internal scattering)
     :param tau_ld: leaf hemispherical transmittance (diffuse internal scattering)
-    :return: xg, wg, gdir_out, gdif_out, gmdir_out, gmdif_out
+    :return: xg, wg, pdfs, gdir_out, gdif_out, gmdir_out, gmdif_out
     """
     # Obtain Gauss quadrature
     xg, wg = gauss_quad(ng)
@@ -354,7 +354,7 @@ def xsections(ng, hL, dist, mp, pp, rho_ld, tau_ld):
     check_gammadir(ng, wg, rho_ld, tau_ld, gmdir_out, gdir_out)
     gmdif_out = gamma_dif(ng, xg, wg, 1.0, pdfs[dist, :], rho_ld, tau_ld, gdif_out)
 
-    return xg, wg, gdir_out, gdif_out, gmdir_out, gmdif_out
+    return xg, wg, pdfs, gdir_out, gdif_out, gmdir_out, gmdif_out
 
 
 def io_uncol_down(deltaL, nlayers, gdir, io, mp):
@@ -808,3 +808,5 @@ def energy_bal(nlayers, ng, xg, wg, deltaL, r_s, rhold, tauld, gdir, gdif, fo_uc
 
     for v in var_collect:
         print v
+
+    return hr
