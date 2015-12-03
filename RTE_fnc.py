@@ -780,33 +780,33 @@ def energy_bal(nlayers, ng, xg, wg, deltaL, r_s, rhold, tauld, gdir, gdif, fo_uc
     # Calculating the totals
     hr = hr_uc + hr_c #  DHR if fdir=1, else BHR)
     ht = ht_uc + ht_c
-    ab = ab_uc + ab_c
-    usa = (1 - r_s) * ht_uc
-    csa = (1 - r_s) * ht_c
-    sa = (1 - r_s) * ht
-    ebal = hr + ab + (1 - r_s) * ht
+    # ab = ab_uc + ab_c
+    # usa = (1 - r_s) * ht_uc
+    # csa = (1 - r_s) * ht_c
+    # sa = (1 - r_s) * ht
+    # ebal = hr + ab + (1 - r_s) * ht
+    #
+    # # return dict with variables
+    # vn = ('Uncollided Hemispherical Reflectance (hc_uc)',
+    #         'Collided Hemispherical Reflectance (hr_c)',
+    #         'Hemispherical Reflectance (hr)',
+    #         'Uncollided Hemispherical Transmittance (ht_uc)',
+    #         'Collided Hemispherical Transmittance (ht_c)',
+    #         'Hemispherical Transmittance (ht)',
+    #         'Uncollided Canopy Absorptance (ab_uc)',
+    #         'Collided Canopy Absorptance (ab_c)',
+    #         'Canopy Absorptance (ab)',
+    #         'Uncollided Soil Absorptance (usa)',
+    #         'Collided Soil Absorptance (csa)',
+    #         'Soil Absorptance (sa)',
+    #         'Energy Balance (=1.0)')
+    #
+    # var_collect = [(vn[0], hr_uc), (vn[1], hr_c), (vn[2], hr),
+    #                (vn[3], ht_uc), (vn[4], ht_c), (vn[5], ht),
+    #                (vn[6], ab_uc), (vn[7], ab_c), (vn[8], ab),
+    #                (vn[9], usa), (vn[10], csa), (vn[11], sa), (vn[12], ebal)]
+    #
+    # for v in var_collect:
+    #     print v
 
-    # return dict with variables
-    vn = ('Uncollided Hemispherical Reflectance (hc_uc)',
-            'Collided Hemispherical Reflectance (hr_c)',
-            'Hemispherical Reflectance (hr)',
-            'Uncollided Hemispherical Transmittance (ht_uc)',
-            'Collided Hemispherical Transmittance (ht_c)',
-            'Hemispherical Transmittance (ht)',
-            'Uncollided Canopy Absorptance (ab_uc)',
-            'Collided Canopy Absorptance (ab_c)',
-            'Canopy Absorptance (ab)',
-            'Uncollided Soil Absorptance (usa)',
-            'Collided Soil Absorptance (csa)',
-            'Soil Absorptance (sa)',
-            'Energy Balance (=1.0)')
-
-    var_collect = [(vn[0], hr_uc), (vn[1], hr_c), (vn[2], hr),
-                   (vn[3], ht_uc), (vn[4], ht_c), (vn[5], ht),
-                   (vn[6], ab_uc), (vn[7], ab_c), (vn[8], ab),
-                   (vn[9], usa), (vn[10], csa), (vn[11], sa), (vn[12], ebal)]
-
-    for v in var_collect:
-        print v
-
-    return hr
+    return hr, ht
