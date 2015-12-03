@@ -55,7 +55,6 @@ for ims in range(100):
 
 #  Print theta_v, phi_v and RF values
 
-RF = np.zeros((ng, ng/2)) # Reflectance factor, BRF if fdir=1, else HDRF)
 for i in range(ng/2, ng):
     theta_v = np.degrees(xg[i])
     for j in range(ng):
