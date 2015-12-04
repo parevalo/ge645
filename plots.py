@@ -241,14 +241,34 @@ xg = RTE_calls(ng, thetaprime, phiprime, muprime,
 # First set of reflectance and transmittance
 rhold = 0.7
 tauld = 0.225
-hdrf = np.zeros((3, 10)) # First angle, then hdrf forward, then backward
+hdrf = np.zeros((2, 10)) # angle, then hdrf forward, then backward
 ct = 0
 for k in range(90, 190, 10):
 
     # Forward scattering
     thetaprime = np.radians(k)
     muprime = np.cos(thetaprime)
+    phiprime = np.radians(0.0)
     Io = Ftot * (fdir / (abs(muprime)))
+    Id = Ftot * (1 - fdir) / np.pi
+    ic = RTE_calls(ng, thetaprime, phiprime, muprime,
+            dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[7]
+
+    for i in range(ng/2, ng):
+        #theta_v = np.degrees(xg[i])
+        for j in range(ng):
+            #phi_v = np.degrees(xg[j] * np.pi + np.pi)
+            hdrf[1, ct] = ic[0, j, i] * np.pi
+
+    ct += 1
+
+ct = 0
+for k in range(180, 80, -10):
+    # Backward scattering
+    thetaprime = np.radians(k) + np.pi
+    muprime = np.cos(thetaprime)
+    Io = Ftot * (fdir / (abs(muprime)))
+    Id = Ftot * (1 - fdir) / np.pi
     ic = RTE_calls(ng, thetaprime, phiprime, muprime,
             dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[7]
 
@@ -257,24 +277,6 @@ for k in range(90, 190, 10):
         for j in range(ng):
             #phi_v = np.degrees(xg[j] * np.pi + np.pi)
             hdrf[0, ct] = ic[0, j, i] * np.pi
-            hdrf[1, ct] = theta_v
-    ct += 1
-
-ct = 0
-for k in range(90, 190, 10):
-    # Backward scattering
-    thetaprime = np.radians(k) + np.pi
-    muprime = np.cos(thetaprime)
-    Io = Ftot * (fdir / (abs(muprime)))
-    ic = RTE_calls(ng, thetaprime, phiprime, muprime,
-            dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[7]
-
-    for i in range(ng/2, ng):
-        theta_v = np.degrees(xg[i])
-        for j in range(ng):
-            #phi_v = np.degrees(xg[j] * np.pi + np.pi)
-            hdrf[2, ct] = ic[0, j, i] * np.pi
-            hdrf[0, ct] = theta_v
     ct += 1
 
 # Second set of reflectance and transmittance
@@ -288,6 +290,7 @@ for k in range(90, 190, 10):
     thetaprime = np.radians(k)
     muprime = np.cos(thetaprime)
     Io = Ftot * (fdir / (abs(muprime)))
+    Id = Ftot * (1 - fdir) / np.pi
     ic = RTE_calls(ng, thetaprime, phiprime, muprime,
             dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[7]
 
@@ -302,7 +305,7 @@ for k in range(90, 190, 10):
 ct = 0
 for k in range(90, 190, 10):
     # Backward scattering
-    thetaprime = np.radians(k) + np.pi
+    thetaprime = np.radians(k)
     muprime = np.cos(thetaprime)
     Io = Ftot * (fdir / (abs(muprime)))
     ic = RTE_calls(ng, thetaprime, phiprime, muprime,
