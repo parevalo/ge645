@@ -779,7 +779,7 @@ def energy_bal(nlayers, ng, xg, wg, deltaL, r_s, rhold, tauld, gdir, gdif, fo_uc
 
     # Calculating the totals
     hr = hr_uc + hr_c #  DHR if fdir=1, else BHR)
-    ht = ht_uc + ht_c
+    ht = ht_uc + ht_c # BRF if fdir=1, else HDRF
     # ab = ab_uc + ab_c
     # usa = (1 - r_s) * ht_uc
     # csa = (1 - r_s) * ht_c
