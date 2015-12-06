@@ -230,11 +230,12 @@ plt.show()
 
 # HDRF vs View ZA
 
-xg = RTE_calls(ng, thetaprime, phiprime, muprime,
-            dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[0]
 
+xg = gauss_quad(12)[0]
+dist = 4
 def hdrf_plot(LAI, rhold, tauld, azim, zen, R_s, fdir):
 
+    print dist
     n = 12
     dl = LAI/nl
     thetaprime = np.radians(zen)
@@ -249,24 +250,38 @@ def hdrf_plot(LAI, rhold, tauld, azim, zen, R_s, fdir):
     hdrf_m = np.zeros(n/2)
     ct = 0
     for i in range(ng/2, ng):
-        hdrf[ct, :] = ic[0, :, i]
+        hdrf[ct, :] = ic[0, :, i] * np.pi
         hdrf_m[ct] = np.mean(hdrf[ct, :])
         ct += 1
 
     return hdrf_m
 
-a1 = hdrf_plot(3.0, 0.7, 0.255, 0.0, 150.0, 0.2, 0.7)  # BS
-a2 = hdrf_plot(3.0, 0.7, 0.255, 180.0, 150.0, 0.2, 0.7)  # FS
+# Chapter 4 last plot, requires NO *pi and planophile
+a1 = hdrf_plot(3.0, 0.7, 0.255, 0.0, 150.0, 0.2, 0.7)  # BS azm = 0
+a2 = hdrf_plot(3.0, 0.7, 0.255, 180.0, 150.0, 0.2, 0.7)  # FS azm = 180
 b1 = hdrf_plot(3.0, 0.255, 0.7, 0.0, 150.0, 0.2, 0.7)  # BS
-b2 = hdrf_plot(3.0, 0.255, 0.7, 180.0, 150.0, 0.2, 0.7)  #FS
+b2 = hdrf_plot(3.0, 0.255, 0.7, 180.0, 150.0, 0.2, 0.7)  # FS
+
+# Slides plot # 1 - RED, requires *pi and plagiophile
+a1 = hdrf_plot(2.2, 0.1014, 0.0526, 81.9, 74.17, 0.0825, 0.862)  # BS azm = 0
+a2 = hdrf_plot(2.2, 0.1014, 0.0526, 261.9, 74.17, 0.0825, 0.862)  # FS azm = 180
+
+# Slides plot # 2 - NIR, requires *pi and plagiophile
+a1 = hdrf_plot(2.2, 0.4913, 0.4525, 81.9, 74.17, 0.0825, 0.862)  # BS azm = 0
+a2 = hdrf_plot(2.2, 0.4913, 0.4525, 261.9, 74.17, 0.0825, 0.862)  # FS azm = 180
+
+# Slides plot # 3 - SWIR, requires *pi and plagiophile
+a1 = hdrf_plot(2.2, 0.4163, 0.3166, 81.9, 74.17, 0.0825, 0.862)  # BS azm = 0
+a2 = hdrf_plot(2.2, 0.4163, 0.3166, 261.9, 74.17, 0.0825, 0.862)  # FS azm = 180
 
 a1 = a1[::-1]
-b1 = b1[::-1]
-bb = np.hstack((b2, b1))
 aa = np.hstack((a2, a1))
-plt.plot(bb)
 plt.plot(aa)
 plt.xlim(0, 11)
+
+b1 = b1[::-1]
+bb = np.hstack((b2, b1))
+plt.plot(bb)
 
 
 # CROSSSECTION FIGURES, HARDCODED WITH n=12
