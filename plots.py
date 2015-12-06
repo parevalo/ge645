@@ -229,97 +229,47 @@ ax1.legend(lines+lines2, labels+labels2, loc=0) # done in ax1 so that legend is 
 plt.show()
 
 # HDRF vs View ZA
-LAI = 3.0
-dl = LAI/nl
-R_s = 0.2
 
-# TEMPORAL FNC CALL, FIX TO AVOID DOUBLE RUN
 xg = RTE_calls(ng, thetaprime, phiprime, muprime,
             dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[0]
 
+def hdrf_plot(LAI, rhold, tauld, azim, zen, R_s, fdir):
 
-# First set of reflectance and transmittance
-rhold = 0.7
-tauld = 0.225
-hdrf = np.zeros((2, 10)) # angle, then hdrf forward, then backward
-ct = 0
-for k in range(90, 190, 10):
-
-    # Forward scattering
-    thetaprime = np.radians(k)
+    n = 12
+    dl = LAI/nl
+    thetaprime = np.radians(zen)
     muprime = np.cos(thetaprime)
-    phiprime = np.radians(0.0)
+    phiprime = np.radians(azim)
     Io = Ftot * (fdir / (abs(muprime)))
     Id = Ftot * (1 - fdir) / np.pi
     ic = RTE_calls(ng, thetaprime, phiprime, muprime,
             dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[7]
 
+    hdrf = np.zeros((n/2, n))
+    hdrf_m = np.zeros(n/2)
+    ct = 0
     for i in range(ng/2, ng):
-        #theta_v = np.degrees(xg[i])
-        for j in range(ng):
-            #phi_v = np.degrees(xg[j] * np.pi + np.pi)
-            hdrf[1, ct] = ic[0, j, i] * np.pi
+        hdrf[ct, :] = ic[0, :, i]
+        hdrf_m[ct] = np.mean(hdrf[ct, :])
+        ct += 1
 
-    ct += 1
+    return hdrf_m
 
-ct = 0
-for k in range(180, 80, -10):
-    # Backward scattering
-    thetaprime = np.radians(k) + np.pi
-    muprime = np.cos(thetaprime)
-    Io = Ftot * (fdir / (abs(muprime)))
-    Id = Ftot * (1 - fdir) / np.pi
-    ic = RTE_calls(ng, thetaprime, phiprime, muprime,
-            dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[7]
+a1 = hdrf_plot(3.0, 0.7, 0.255, 0.0, 150.0, 0.2, 0.7)  # BS
+a2 = hdrf_plot(3.0, 0.7, 0.255, 180.0, 150.0, 0.2, 0.7)  # FS
+b1 = hdrf_plot(3.0, 0.255, 0.7, 0.0, 150.0, 0.2, 0.7)  # BS
+b2 = hdrf_plot(3.0, 0.255, 0.7, 180.0, 150.0, 0.2, 0.7)  #FS
 
-    for i in range(ng/2, ng):
-        theta_v = np.degrees(xg[i])
-        for j in range(ng):
-            #phi_v = np.degrees(xg[j] * np.pi + np.pi)
-            hdrf[0, ct] = ic[0, j, i] * np.pi
-    ct += 1
+a1 = a1[::-1]
+b1 = b1[::-1]
+bb = np.hstack((b2, b1))
+aa = np.hstack((a2, a1))
+plt.plot(bb)
+plt.plot(aa)
+plt.xlim(0, 11)
 
-# Second set of reflectance and transmittance
-rhold = 0.225
-tauld = 0.7
-hdrf = np.zeros((3, 10)) # First angle, then hdrf forward, then backward
-ct = 0
-for k in range(90, 190, 10):
 
-    # Forward scattering
-    thetaprime = np.radians(k)
-    muprime = np.cos(thetaprime)
-    Io = Ftot * (fdir / (abs(muprime)))
-    Id = Ftot * (1 - fdir) / np.pi
-    ic = RTE_calls(ng, thetaprime, phiprime, muprime,
-            dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[7]
-
-    for i in range(ng/2, ng):
-        theta_v = np.degrees(xg[i])
-        for j in range(ng):
-            #phi_v = np.degrees(xg[j] * np.pi + np.pi)
-            hdrf[0, ct] = ic[0, j, i] * np.pi
-            hdrf[1, ct] = theta_v
-    ct += 1
-
-ct = 0
-for k in range(90, 190, 10):
-    # Backward scattering
-    thetaprime = np.radians(k)
-    muprime = np.cos(thetaprime)
-    Io = Ftot * (fdir / (abs(muprime)))
-    ic = RTE_calls(ng, thetaprime, phiprime, muprime,
-            dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[7]
-
-    for i in range(ng/2, ng):
-        theta_v = np.degrees(xg[i])
-        for j in range(ng):
-            #phi_v = np.degrees(xg[j] * np.pi + np.pi)
-            hdrf[2, ct] = ic[0, j, i] * np.pi
-            #hdrf[0, ct] = theta_v
-    ct += 1
-
-# CROSSSECTION FIGURES, HARCODED WITH n=12
+# CROSSSECTION FIGURES, HARDCODED WITH n=12
 # Figure 3
 # for i in range(6):
 #     plt.plot(np.arange(0, 90, 8), pdfs[i, :])

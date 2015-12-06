@@ -10,16 +10,16 @@ phiprime = np.radians(0.0)
 muprime = np.cos(thetaprime)
 distnames = ('Planophile', 'Erectophile', 'Plagiphile', 'Extremophile', 'Uniform', 'Spherical')
 dist = 0
-nl = 100
-epsilon = 0.00001
+nl = 10
+epsilon = 0.0001
 Ftot = 1.0
 fdir = 0.7
 Io = Ftot * (fdir / (abs(muprime)))
 Id = Ftot * (1 - fdir) / np.pi
-LAI = 5.0
+LAI = 3.0
 dl = LAI/nl
-rhold = 0.475
-tauld = 0.45
+rhold = 0.7
+tauld = 0.225
 R_s = 0.2
 
 #  Get crosssections
