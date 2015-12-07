@@ -83,7 +83,7 @@ def example_integral(ng, xg, wg):
 
     sum = sum * conv1
 
-    return 'Integral has a value of {}'.format(sum)
+    #return 'Integral has a value of {}'.format(sum)
 
 
 def leaf_normal_pdf(ng, xg, wg):
@@ -114,7 +114,7 @@ def leaf_normal_pdf(ng, xg, wg):
         sum += (gL[0,i] * wg[i])
 
     sum *= conv1
-    print 'The integral sums up to {}'.format(sum)
+    print 'PDF integral sums up to {}'.format(sum)
 
     return gL
 
@@ -574,7 +574,7 @@ def sweep_down(nlayers, ng, xg, wg, gdif, deltaL, jj, r_s, ic):
     return ic
 
 
-def sweep_up(nlayers, ng, xg, gdif, deltaL, jj, ic, eps):
+def sweep_up(nlayers, ng, xg, gdif, deltaL, jj, icf, eps):
     """
     This routine sweeps upward in the phase-space mesh and checks for convergence
     :param nlayers: Number of layers in canopy
@@ -589,10 +589,10 @@ def sweep_up(nlayers, ng, xg, gdif, deltaL, jj, ic, eps):
     """
 
     #  Save earlier iterate of ic[0, j, i] for convergence checking
-    ic_old = np.zeros(ic.shape[1:3])
+    ic_old = np.zeros((ng, ng))
     for i in range(ng/2, ng):
         for j in range(ng):
-            ic_old[j, i] = ic[0, j, i]
+            ic_old[j, i] = icf[0, j, i]
 
     #  Sweep upwards
 
@@ -602,14 +602,13 @@ def sweep_up(nlayers, ng, xg, gdif, deltaL, jj, ic, eps):
             cij = ((xg[i] / deltaL) - (0.5 * gdif[j, i])) / fij
             dij = 1.0 / fij
             for k in range(nlayers-1, -1, -1): #this goes from 99 to 0
-                ic[k, j, i] = cij * ic[k+1, j, i] + dij * jj[k, j, i]
+                icf[k, j, i] = cij * icf[k+1, j, i] + dij * jj[k, j, i]
 
     #  Check for convergence
     converg = True
-    ct = 0
     for i in range(ng/2, ng):
         for j in range(ng):
-            tv = abs(ic[0, j, i] - ic_old[j, i])
+            tv = abs(icf[0, j, i] - ic_old[j, i])
             if tv > eps:
                 converg = False
                 break
@@ -617,7 +616,7 @@ def sweep_up(nlayers, ng, xg, gdif, deltaL, jj, ic, eps):
                 converg = True
                 break
 
-    return converg, ic
+    return converg, icf
 
 
 def multicoll_s(nlayers, ng, wg, gmdif, ic):
@@ -634,7 +633,7 @@ def multicoll_s(nlayers, ng, wg, gmdif, ic):
     #  Evaluate multiple collision source due to Ic
     conv1 = convfactors(1.0, -1.0)[0]
     conv2 = convfactors(2.0 * np.pi, 0.0)[0]
-    s = np.zeros((nlayers, ng, ng))
+    s = np.zeros((nlayers, ng, ng)) # We only need it to be of size nlayers
 
     for i in range(ng):
         for j in range(ng):
@@ -780,33 +779,33 @@ def energy_bal(nlayers, ng, xg, wg, deltaL, r_s, rhold, tauld, gdir, gdif, fo_uc
     # Calculating the totals
     hr = hr_uc + hr_c #  DHR if fdir=1, else BHR)
     ht = ht_uc + ht_c # BRF if fdir=1, else HDRF
-    # ab = ab_uc + ab_c
-    # usa = (1 - r_s) * ht_uc
-    # csa = (1 - r_s) * ht_c
-    # sa = (1 - r_s) * ht
-    # ebal = hr + ab + (1 - r_s) * ht
-    #
-    # # return dict with variables
-    # vn = ('Uncollided Hemispherical Reflectance (hc_uc)',
-    #         'Collided Hemispherical Reflectance (hr_c)',
-    #         'Hemispherical Reflectance (hr)',
-    #         'Uncollided Hemispherical Transmittance (ht_uc)',
-    #         'Collided Hemispherical Transmittance (ht_c)',
-    #         'Hemispherical Transmittance (ht)',
-    #         'Uncollided Canopy Absorptance (ab_uc)',
-    #         'Collided Canopy Absorptance (ab_c)',
-    #         'Canopy Absorptance (ab)',
-    #         'Uncollided Soil Absorptance (usa)',
-    #         'Collided Soil Absorptance (csa)',
-    #         'Soil Absorptance (sa)',
-    #         'Energy Balance (=1.0)')
-    #
-    # var_collect = [(vn[0], hr_uc), (vn[1], hr_c), (vn[2], hr),
-    #                (vn[3], ht_uc), (vn[4], ht_c), (vn[5], ht),
-    #                (vn[6], ab_uc), (vn[7], ab_c), (vn[8], ab),
-    #                (vn[9], usa), (vn[10], csa), (vn[11], sa), (vn[12], ebal)]
-    #
-    # for v in var_collect:
-    #     print v
+    ab = ab_uc + ab_c
+    usa = (1 - r_s) * ht_uc
+    csa = (1 - r_s) * ht_c
+    sa = (1 - r_s) * ht
+    ebal = hr + ab + (1 - r_s) * ht
+
+    # return dict with variables
+    vn = ('Uncollided Hemispherical Reflectance (hc_uc)',
+            'Collided Hemispherical Reflectance (hr_c)',
+            'Hemispherical Reflectance (hr)',
+            'Uncollided Hemispherical Transmittance (ht_uc)',
+            'Collided Hemispherical Transmittance (ht_c)',
+            'Hemispherical Transmittance (ht)',
+            'Uncollided Canopy Absorptance (ab_uc)',
+            'Collided Canopy Absorptance (ab_c)',
+            'Canopy Absorptance (ab)',
+            'Uncollided Soil Absorptance (usa)',
+            'Collided Soil Absorptance (csa)',
+            'Soil Absorptance (sa)',
+            'Energy Balance (=1.0)')
+
+    var_collect = [(vn[0], hr_uc), (vn[1], hr_c), (vn[2], hr),
+                   (vn[3], ht_uc), (vn[4], ht_c), (vn[5], ht),
+                   (vn[6], ab_uc), (vn[7], ab_c), (vn[8], ab),
+                   (vn[9], usa), (vn[10], csa), (vn[11], sa), (vn[12], ebal)]
+
+    for v in var_collect:
+        print v
 
     return hr, ht

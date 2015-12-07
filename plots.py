@@ -8,10 +8,10 @@ ng = 8
 thetaprime = np.radians(150.0)
 phiprime = np.radians(0.0)
 muprime = np.cos(thetaprime)
-distnames = ('Planophile', 'Erectophile', 'Plagiphile', 'Extremophile', 'Uniform', 'Spherical')
+distnames = ('Planophile', 'Erectophile', 'Plagiophile', 'Extremophile', 'Uniform', 'Spherical')
 dist = 0
 nl = 100
-epsilon = 0.00001
+epsilon = 0.0001
 Ftot = 1.0
 fdir = 0.7
 Io = Ftot * (fdir / (abs(muprime)))
@@ -46,8 +46,6 @@ def RTE_calls(ng, thetaprime, phiprime, muprime, dist, nl, epsilon, Ftot, fdir, 
             for j in range(ng):
                 for k in range(nl):
                     S[k, j, i] += Q[k, j, i]
-        #s_bot[ims, :, :] = S[99, :, :] # Here or below?
-        #s_top[ims, :, :] = S[0, :, :] # Here or below?
 
         ic1 = sweep_down(nl, ng, xg, wg, gdif_out, dl, S, R_s, ic)
         cv, ic = sweep_up(nl, ng, xg, gdif_out, dl, S, ic1, epsilon)
@@ -56,14 +54,14 @@ def RTE_calls(ng, thetaprime, phiprime, muprime, dist, nl, epsilon, Ftot, fdir, 
             break
 
         S = multicoll_s(nl, ng, wg, gmdif_out, ic)
-        # s_bot[ims, :, :] = S[99, :, :] # Here or above?
-        # s_top[ims, :, :] = S[0, :, :] # Here or above?
+        #s_bot[ims, :, :] = S[nl-1, :, :]  # Here or above?
+        #s_top[ims, :, :] = S[0, :, :]  # Here or above?
 
     # Energy balance was modified to return HR
     HR, HT = energy_bal(nl, ng, xg, wg, dl, R_s, rhold, tauld, gdir_out, gdif_out, Fo_ucdsoil,
            Fd_ucdsoil, Io_ucd, Id_ucd, Io_ucu, Id_ucu, ic)
 
-    return xg, wg, pdfs, s_top, s_bot, HR, HT, ic
+    return xg, wg, pdfs, s_top, s_bot, HR, HT, ic, Io_ucu, Id_ucu
 
 
 # PLOTS, convert into function or something
@@ -73,18 +71,14 @@ s_top, s_bot = RTE_calls(ng, thetaprime, phiprime, muprime,
 
 # FIGURE 3 - CHAPTER 3
 def sconver(s_arr):
-    convs = np.zeros(30)
+    convs = np.zeros(30) #30 because that's the last iteration with data
     for i in range(30):
-        mnsum = 0.0
-        for j in range(8):
-            mn = np.max(s_arr[i,j,:])
-            mnsum += mn
+        convs[i] = np.sum(s_arr[i,:,:])
 
-        convs[i] = mnsum
     return convs
 
-cs_bot = sconver(s_bot)
-cs_top = sconver(s_top)
+cs_bot = sconver(s_bot[:, :ng/2, :])
+cs_top = sconver(s_top[:, :ng/2, :])
 
 plt.plot(cs_bot)
 plt.plot(cs_top)
@@ -92,7 +86,9 @@ plt.plot(cs_top)
 
 # FIGURE 4 - CHAPTER 3
 # BHR - NIR and RED
+epsilon = 0.0001
 bhr = np.zeros((4, 11)) #First two are nir, the others are red
+ct = 0
 for i in range(0, 55, 5):
     LAI = i/10.0
     dl = LAI/nl
@@ -101,66 +97,50 @@ for i in range(0, 55, 5):
     rhold = 0.475
     tauld = 0.45
     R_s = 0.2
-    bhr[0, i/5] = RTE_calls(ng, thetaprime, phiprime, muprime,
+    bhr[0, ct] = RTE_calls(ng, thetaprime, phiprime, muprime,
             dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[5]
 
     R_s = 0.0
-    bhr[1, i/5] = RTE_calls(ng, thetaprime, phiprime, muprime,
+    bhr[1, ct] = RTE_calls(ng, thetaprime, phiprime, muprime,
             dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[5]
 
     # RED
     rhold = 0.075
     tauld = 0.035
     R_s = 0.125
-    bhr[2, i/5] = RTE_calls(ng, thetaprime, phiprime, muprime,
+    bhr[2, ct] = RTE_calls(ng, thetaprime, phiprime, muprime,
             dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[5]
 
     R_s = 0.0
-    bhr[3, i/5] = RTE_calls(ng, thetaprime, phiprime, muprime,
+    bhr[3, ct] = RTE_calls(ng, thetaprime, phiprime, muprime,
             dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[5]
 
+    ct += 1
+
 # Plot NIR
-plt.plot(np.arange(0, 5.5, 0.5), bhr[0,:])
-plt.plot(np.arange(0, 5.5, 0.5), bhr[1,:])
+
+plt.plot(np.arange(0, 5.5, 0.5), bhr[0, :])
+plt.plot(np.arange(0, 5.5, 0.5), bhr[1, :])
 plt.ylim(0, 0.6)
+plt.grid()
 plt.xlabel("Canopy Green Leaf Area Index")
 plt.ylabel("BHR - NIR")
+plt.legend(('R_s = 0.125', 'R_s = 0'), loc = 0)
 plt.xticks(np.linspace(0, 5, 11))
 
 # Plot RED
-plt.plot(np.arange(0, 5.5, 0.5), bhr[2,:])
-plt.plot(np.arange(0, 5.5, 0.5), bhr[3,:])
+plt.plot(np.arange(0, 5.5, 0.5), bhr[2, :])
+plt.plot(np.arange(0, 5.5, 0.5), bhr[3, :])
 plt.ylim(0, 0.12)
+plt.grid()
 plt.xlabel("Canopy Green Leaf Area Index")
 plt.ylabel("BHR - RED")
+plt.legend(('R_s = 0.2', 'R_s = 0'), loc = 0)
 plt.xticks(np.linspace(0, 5, 11))
 
-# BHR - RED
-rhold = 0.075
-tauld = 0.035
-bhr = np.zeros((2, 11))
-for i in range(0, 55, 5):
-    R_s = 0.125
-    LAI = i/10.0
-    dl = LAI/nl
-    bhr[0, i/5] = RTE_calls(ng, thetaprime, phiprime, muprime,
-            dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[5]
-
-    R_s = 0.0
-    bhr[1, i/5] = RTE_calls(ng, thetaprime, phiprime, muprime,
-            dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[5]
-
-
-plt.plot(np.arange(0, 5.5, 0.5), bhr[0,:])
-plt.plot(np.arange(0, 5.5, 0.5), bhr[1,:])
-plt.ylim(0, 0.6)
-plt.xlabel("Canopy Green Leaf Area Index")
-plt.ylabel("BHR - NIR")
-plt.xticks(np.linspace(0, 5, 11))
 
 # BHT - NIR AND RED
 bht = np.zeros((2, 11)) #First two are nir, the others are red
-R_s = 0.2
 for i in range(0, 55, 5):
     LAI = i/10.0
     dl = LAI/nl
@@ -168,26 +148,29 @@ for i in range(0, 55, 5):
     # NIR
     rhold = 0.475
     tauld = 0.45
+    R_s = 0.2
     bht[0, i/5] = RTE_calls(ng, thetaprime, phiprime, muprime,
             dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[6]
 
     # RED
     rhold = 0.075
     tauld = 0.035
+    R_s = 0.125
     bht[1, i/5] = RTE_calls(ng, thetaprime, phiprime, muprime,
             dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[6]
 
 plt.plot(np.arange(0, 5.5, 0.5), bht[0,:])
 plt.plot(np.arange(0, 5.5, 0.5), bht[1,:])
 plt.ylim(0, 1)
+plt.grid()
 plt.xlabel("Canopy Green Leaf Area Index")
 plt.ylabel("BHT")
+plt.legend(('NIR', 'Red'), loc = 0)
 plt.xticks(np.linspace(0, 5, 11))
 
 # BHR VS SZA
 LAI = 3.0
 dl = LAI/nl
-R_s = 0.2
 bhr = np.zeros((2, 10)) #First NIR, second RED
 ct =0 # Fix to avoid the ugly counter
 
@@ -200,6 +183,7 @@ for i in range(90, 190, 10):
     # NIR
     rhold = 0.475
     tauld = 0.45
+    R_s = 0.2
 
     bhr[0, ct] = RTE_calls(ng, thetaprime, phiprime, muprime,
             dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[5]
@@ -207,6 +191,7 @@ for i in range(90, 190, 10):
     # RED
     rhold = 0.075
     tauld = 0.035
+    R_s = 0.125
     bhr[1, ct] = RTE_calls(ng, thetaprime, phiprime, muprime,
             dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[5]
 
@@ -226,71 +211,102 @@ ax2.set_ylabel('BHR - RED')
 lines, labels = ax1.get_legend_handles_labels()
 lines2, labels2 = ax2.get_legend_handles_labels()
 ax1.legend(lines+lines2, labels+labels2, loc=0) # done in ax1 so that legend is on left automatic.
+plt.grid()
 plt.show()
 
 # HDRF vs View ZA
 
+ng = 12
+xg = gauss_quad(ng)[0]
 
-xg = gauss_quad(12)[0]
-dist = 4
 def hdrf_plot(LAI, rhold, tauld, azim, zen, R_s, fdir):
 
-    print dist
-    n = 12
+    print 'Using distribution: {}'.format(distnames[dist])
     dl = LAI/nl
     thetaprime = np.radians(zen)
     muprime = np.cos(thetaprime)
     phiprime = np.radians(azim)
     Io = Ftot * (fdir / (abs(muprime)))
     Id = Ftot * (1 - fdir) / np.pi
-    ic = RTE_calls(ng, thetaprime, phiprime, muprime,
-            dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[7]
+    ic, Io_ucu, Id_ucu = RTE_calls(ng, thetaprime, phiprime, muprime,
+            dist, nl, epsilon, Ftot, fdir, Io, Id, LAI, dl, rhold, tauld, R_s)[7:10]
 
-    hdrf = np.zeros((n/2, n))
-    hdrf_m = np.zeros(n/2)
+    hdrf = np.zeros((ng/2, ng))
+    hdrf_m = np.zeros(ng/2)
+
     ct = 0
     for i in range(ng/2, ng):
-        hdrf[ct, :] = ic[0, :, i] * np.pi
-        hdrf_m[ct] = np.mean(hdrf[ct, :])
+        hdrf[ct, :] = ic[0, :, i] + Io_ucu[0, :, i] + Id_ucu[0, :, i]
+        hdrf_m[ct] = np.mean(hdrf[ct, :ng/2])
         ct += 1
 
     return hdrf_m
 
+# Calculate angles
+def get_quad_angles(ng, xg):
+    theta_v = np.zeros(ng/2)
+    ct = 0
+    for i in range(ng/2, ng):
+        theta_v[ct] = np.degrees(xg[i])
+        ct +=1
+    theta_back = theta_v[::-1]*-1
+    full_sza = np.hstack((theta_back, theta_v))
+
+    return full_sza
+
+vza = get_quad_angles(ng, xg)
+
 # Chapter 4 last plot, requires NO *pi and planophile
+dist = 0
 a1 = hdrf_plot(3.0, 0.7, 0.255, 0.0, 150.0, 0.2, 0.7)  # BS azm = 0
 a2 = hdrf_plot(3.0, 0.7, 0.255, 180.0, 150.0, 0.2, 0.7)  # FS azm = 180
 b1 = hdrf_plot(3.0, 0.255, 0.7, 0.0, 150.0, 0.2, 0.7)  # BS
 b2 = hdrf_plot(3.0, 0.255, 0.7, 180.0, 150.0, 0.2, 0.7)  # FS
 
+# Invert this part of the data
+a1 = a1[::-1]
+b1 = b1[::-1]
+
+aa = np.hstack((a2, a1))
+bb = np.hstack((b2, b1))
+
+vza_fake = np.linspace(-90, 90, 12)
+plt.grid()
+plt.xlim(-90, 90)
+plt.xticks(vza, fake)
+plt.plot(vza_fake, aa)
+plt.plot(vza_fake, bb)
+plt.legend(('r=0.7, t=0.225', 'r=0.225, t=0.7'), loc=0)
+
+# SLIDES - PPAL PLANE
+dist = 4
 # Slides plot # 1 - RED, requires *pi and plagiophile
-a1 = hdrf_plot(2.2, 0.1014, 0.0526, 81.9, 74.17, 0.0825, 0.862)  # BS azm = 0
-a2 = hdrf_plot(2.2, 0.1014, 0.0526, 261.9, 74.17, 0.0825, 0.862)  # FS azm = 180
+hdrf_red1 = hdrf_plot(2.2, 0.1014, 0.0526, 81.9, 74.17, 0.0825, 0.862)  # BS azm = 0
+hdrf_red2 = hdrf_plot(2.2, 0.1014, 0.0526, 261.9, 74.17, 0.0825, 0.862)  # FS azm = 180
 
 # Slides plot # 2 - NIR, requires *pi and plagiophile
-a1 = hdrf_plot(2.2, 0.4913, 0.4525, 81.9, 74.17, 0.0825, 0.862)  # BS azm = 0
-a2 = hdrf_plot(2.2, 0.4913, 0.4525, 261.9, 74.17, 0.0825, 0.862)  # FS azm = 180
+hdrf_nir1 = hdrf_plot(2.2, 0.4913, 0.4525, 81.9, 74.17, 0.1363, 0.911)  # BS azm = 0
+hdrf_nir2 = hdrf_plot(2.2, 0.4913, 0.4525, 261.9, 74.17, 0.1363, 0.911)  # FS azm = 180
 
 # Slides plot # 3 - SWIR, requires *pi and plagiophile
-a1 = hdrf_plot(2.2, 0.4163, 0.3166, 81.9, 74.17, 0.0825, 0.862)  # BS azm = 0
-a2 = hdrf_plot(2.2, 0.4163, 0.3166, 261.9, 74.17, 0.0825, 0.862)  # FS azm = 180
+hdrf_swir1 = hdrf_plot(2.2, 0.4163, 0.3166, 81.9, 74.17, 0.2139, 0.966)  # BS azm = 0
+hdrf_swir2 = hdrf_plot(2.2, 0.4163, 0.3166, 261.9, 74.17, 0.2139, 0.966)  # FS azm = 180
 
-a1 = a1[::-1]
-aa = np.hstack((a2, a1))
-plt.plot(aa)
-plt.xlim(0, 11)
+# SLIDES - CROSS PPAL PLANE
 
-b1 = b1[::-1]
-bb = np.hstack((b2, b1))
-plt.plot(bb)
 
 
 # CROSSSECTION FIGURES, HARDCODED WITH n=12
-# Figure 3
+# # Figure 3
+#
+# xg, wg = gauss_quad(12)
+# pdfs = leaf_normal_pdf(ng, xg, wg)
 # for i in range(6):
 #     plt.plot(np.arange(0, 90, 8), pdfs[i, :])
 #
 # plt.xlabel('Leaf inclination in degrees')
 # plt.ylabel('Leaf normal inclination distribution function')
+# plt.legend(distnames, loc=6)
 #
 # # Figure 8
 # plt.figure()
@@ -328,7 +344,7 @@ plt.plot(bb)
 # lab = t/(t+p)
 # plt.legend(lab, title="$\\tau \div \omega$ =")
 #
-# # Figure 11
+# Figure 11
 # def sph2cart(r, theta, phi):
 #     """
 #     Function to convert between spherical to cartesian coordinates
@@ -353,6 +369,7 @@ plt.plot(bb)
 # mu_size = 180 / 5 + 1
 # phi_size = 360 / 5 + 1
 # totsize = mu_size * phi_size
+# gdir_out = g_dir(ng, xg, wg, 1.0, pdfs[0, :], muprime, phiprime)
 # gmd = np.zeros((mu_size, phi_size))
 # ords = np.zeros((mu_size, phi_size))
 # for i in range(0, 185, 5):
@@ -373,4 +390,4 @@ plt.plot(bb)
 # plt.grid()
 # plt.xlabel('Cosine of Scattering Angle')
 # plt.ylabel('Normalized scattering phase function')
-#
+# #

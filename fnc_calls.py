@@ -10,7 +10,7 @@ phiprime = np.radians(0.0)
 muprime = np.cos(thetaprime)
 distnames = ('Planophile', 'Erectophile', 'Plagiphile', 'Extremophile', 'Uniform', 'Spherical')
 dist = 0
-nl = 10
+nl = 100
 epsilon = 0.0001
 Ftot = 1.0
 fdir = 0.7
@@ -18,8 +18,8 @@ Io = Ftot * (fdir / (abs(muprime)))
 Id = Ftot * (1 - fdir) / np.pi
 LAI = 3.0
 dl = LAI/nl
-rhold = 0.7
-tauld = 0.225
+rhold = 0.075
+tauld = 0.035
 R_s = 0.2
 
 #  Get crosssections
@@ -34,9 +34,9 @@ Q = fcs(nl, ng, wg, gmdir_out, gmdif_out, Io_ucd, Io_ucu, Id_ucd, Id_ucu)
 
 #  Iterate over multiple collision source
 S = np.zeros((nl, ng, ng))
+ic = np.zeros((nl+1, ng, ng))
 s_bot = np.zeros((nl, ng, ng)) # Added to create Figure 1
 s_top = np.zeros((nl, ng, ng)) # Added to create Figure 1
-ic = np.zeros((nl+1, ng, ng))
 for ims in range(100):
     print ims
     #S[:, :, :] += Q[:, :, :] # Vectorized version works fine too
@@ -52,6 +52,8 @@ for ims in range(100):
         break
 
     S = multicoll_s(nl, ng, wg, gmdif_out, ic)
+
+print ic[0, :,:]
 
 #  Print theta_v, phi_v and RF values
 
