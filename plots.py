@@ -236,7 +236,7 @@ def hdrf_plot(LAI, rhold, tauld, azim, zen, R_s, fdir):
 
     ct = 0
     for i in range(ng/2, ng):
-        hdrf[ct, :] = ic[0, :, i] + Io_ucu[0, :, i] + Id_ucu[0, :, i]
+        hdrf[ct, :] = (ic[0, :, i] + Io_ucu[0, :, i] + Id_ucu[0, :, i]) * np.pi
         hdrf_m[ct] = np.mean(hdrf[ct, :ng/2])
         ct += 1
 
@@ -273,13 +273,26 @@ bb = np.hstack((b2, b1))
 vza_fake = np.linspace(-90, 90, 12)
 plt.grid()
 plt.xlim(-90, 90)
-plt.xticks(vza, fake)
+plt.xticks(vza_fake)
 plt.plot(vza_fake, aa)
 plt.plot(vza_fake, bb)
 plt.legend(('r=0.7, t=0.225', 'r=0.225, t=0.7'), loc=0)
 
 # SLIDES - PPAL PLANE
-dist = 4
+dist = 2
+# Comparison data
+ref_vza = np.array([75, 60, 45, 30, 15, 0, -15, -30, -45, -60, -75])
+# PPal plane
+pp_red = np.array([11.7, 7.07, 5.3, 4.8, 3.92, 3.95, 4.39, 5.51, 7.25, 9.68,	12.716])
+pp_nir = np.array([89.7,	63.88, 49.4, 37.44,	34.48, 30.65, 33.18, 39.29, 50.9, 65.21, 84.128])
+pp_swir = np.array([65.05, 42.83, 30.75, 26.11, 22.66, 21.26, 22.87, 27.25, 34.86, 45.09, 54.14])
+
+# Cross ppal plane
+cp_red = np.array([8.615, 5.96, 4.954, 4.473, 3.974, 3.902, 3.893, 4.544, 5.72, 7.163, 8.615])
+cp_nir = np.array([72.801, 55.84, 42.543, 38.138, 33.517, 30.594, 29.301, 37.586, 48.457, 60.636, 72.801])
+cp_swir = np.array([45.242, 34.477, 27.353, 23.557, 21.009, 20.281, 20.801, 25.013, 31.149, 38.17, 45.242])
+
+
 # Slides plot # 1 - RED, requires *pi and plagiophile
 hdrf_red1 = hdrf_plot(2.2, 0.1014, 0.0526, 81.9, 74.17, 0.0825, 0.862)  # BS azm = 0
 hdrf_red2 = hdrf_plot(2.2, 0.1014, 0.0526, 261.9, 74.17, 0.0825, 0.862)  # FS azm = 180
@@ -293,6 +306,40 @@ hdrf_swir1 = hdrf_plot(2.2, 0.4163, 0.3166, 81.9, 74.17, 0.2139, 0.966)  # BS az
 hdrf_swir2 = hdrf_plot(2.2, 0.4163, 0.3166, 261.9, 74.17, 0.2139, 0.966)  # FS azm = 180
 
 # SLIDES - CROSS PPAL PLANE
+
+hdrf_red3 = hdrf_plot(2.2, 0.1014, 0.0526, 81.9+90, 74.17, 0.0825, 0.862)  # BS azm = 0
+hdrf_red4 = hdrf_plot(2.2, 0.1014, 0.0526, 261.9+90, 74.17, 0.0825, 0.862)  # FS azm = 180
+
+# Slides plot # 2 - NIR, requires *pi and plagiophile
+hdrf_nir3 = hdrf_plot(2.2, 0.4913, 0.4525, 81.9+90, 74.17, 0.1363, 0.911)  # BS azm = 0
+hdrf_nir4 = hdrf_plot(2.2, 0.4913, 0.4525, 261.9+90, 74.17, 0.1363, 0.911)  # FS azm = 180
+
+# Slides plot # 3 - SWIR, requires *pi and plagiophile
+hdrf_swir3 = hdrf_plot(2.2, 0.4163, 0.3166, 81.9+90, 74.17, 0.2139, 0.966)  # BS azm = 0
+hdrf_swir4 = hdrf_plot(2.2, 0.4163, 0.3166, 261.9+90, 74.17, 0.2139, 0.966)  # FS azm = 180
+
+
+def hdrf_plotter(h1, h2, dref):
+    h1 = h1[::-1]
+    values = np.hstack((h2, h1))
+    plt.grid()
+    plt.scatter(vza, values, marker=">", c='red')
+    plt.scatter(ref_vza, dref, marker="+")
+    plt.xticks(np.linspace(-100, 100, 11))
+    plt.xlabel('View zenith angle')
+    plt.ylabel('HDRF')
+    plt.legend(('Modeled', 'Measured'), loc=0)
+
+# Plotter calls
+# Red
+hdrf_plotter(hdrf_red1, hdrf_red2, pp_red/100)
+hdrf_plotter(hdrf_red3, hdrf_red4, cp_red/100)
+#NIR
+hdrf_plotter(hdrf_nir1, hdrf_nir2, pp_nir/100)
+hdrf_plotter(hdrf_nir3, hdrf_nir4, cp_nir/100)
+#SWIR
+hdrf_plotter(hdrf_swir1, hdrf_swir2, pp_swir/100)
+hdrf_plotter(hdrf_swir3, hdrf_swir4, cp_swir/100)
 
 
 
