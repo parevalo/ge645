@@ -4,7 +4,7 @@ from RTE_fnc import *
 
 #  Variable declarations
 
-ng = 8
+ng = 12
 thetaprime = np.radians(150.0)
 phiprime = np.radians(0.0)
 muprime = np.cos(thetaprime)
@@ -54,8 +54,8 @@ def RTE_calls(ng, thetaprime, phiprime, muprime, dist, nl, epsilon, Ftot, fdir, 
             break
 
         S = multicoll_s(nl, ng, wg, gmdif_out, ic)
-        #s_bot[ims, :, :] = S[nl-1, :, :]  # Here or above?
-        #s_top[ims, :, :] = S[0, :, :]  # Here or above?
+        s_bot[ims, :, :] = S[nl-1, :, :]  # Here or above?
+        s_top[ims, :, :] = S[0, :, :]  # Here or above?
 
     # Energy balance was modified to return HR
     HR, HT = energy_bal(nl, ng, xg, wg, dl, R_s, rhold, tauld, gdir_out, gdif_out, Fo_ucdsoil,
@@ -71,9 +71,9 @@ s_top, s_bot = RTE_calls(ng, thetaprime, phiprime, muprime,
 
 # FIGURE 3 - CHAPTER 3
 def sconver(s_arr):
-    convs = np.zeros(30) #30 because that's the last iteration with data
-    for i in range(30):
-        convs[i] = np.sum(s_arr[i,:,:])
+    convs = np.zeros(22) #use the last iteration with data
+    for i in range(22):
+        convs[i] = np.sum(s_arr[i,:ng/2,:])
 
     return convs
 
@@ -82,6 +82,10 @@ cs_top = sconver(s_top[:, :ng/2, :])
 
 plt.plot(cs_bot)
 plt.plot(cs_top)
+plt.grid()
+plt.xlabel('Iteration number')
+plt.ylabel('Multiple scattering sources')
+plt.legend(('Bottom of canopy', 'Top of canopy'), loc=0)
 #plt.ylim(0, 1.4)
 
 # FIGURE 4 - CHAPTER 3
@@ -197,7 +201,7 @@ for i in range(90, 190, 10):
 
     ct += 1
 
-sz = np.arange(90, -10, -10)
+sz = np.arange(90, -10, -10) #Use it to replicate the plot x axis
 fig, ax1 = plt.subplots()
 ax1.set_ylim(0.45, 0.60)
 ax1.set_ylabel('BHR - NIR')
@@ -274,8 +278,10 @@ vza_fake = np.linspace(-90, 90, 12)
 plt.grid()
 plt.xlim(-90, 90)
 plt.xticks(vza_fake)
-plt.plot(vza_fake, aa)
-plt.plot(vza_fake, bb)
+plt.plot(vza, aa/np.pi) # This plot in particular is not multiplied by pi
+plt.plot(vza, bb/np.pi)
+plt.xlabel('View zenith angle')
+plt.ylabel('HDRF')
 plt.legend(('r=0.7, t=0.225', 'r=0.225, t=0.7'), loc=0)
 
 # SLIDES - PPAL PLANE
